@@ -106,12 +106,12 @@ unsigned char *fixmap(unsigned char *pt){
 				if (cnt < arrycnt-1) printf(",");
 			} else {
 				if ((ptl-buffer) >= BUFSIZE) {
-					printf("Empty buffer\n");
-					return(0);
+					//printf("Empty buffer\n");
+					return((unsigned char*)-1);
 					//exit(EXIT_SUCCESS);
 				}
 				printf("Unknown Structure-3 %x %x %x %x\n",*ptl, *(ptl+1),*(ptl+2),*(ptl+3));
-				return(0);
+				return((unsigned char*)-2);
 				//exit(EXIT_FAILURE);
 			}
 		}
@@ -131,10 +131,11 @@ unsigned char *fixmap(unsigned char *pt){
 		printf("%d",(*ptl++<<8)|*ptl++);
 	} else {
 		if ((ptl-buffer) >= BUFSIZE) {
-			printf("Empty buffer\n"); exit(EXIT_SUCCESS);
+			printf("Empty buffer\n");
+			exit(EXIT_SUCCESS);
 		}
 		printf("OTHERs %2x %2x\n",code,pt[1]);
-		return ((unsigned char *)-1);
+		return ((unsigned char *)-2);
 	}
 	//printf("- %2x",*ptl);
 	return ptl;
@@ -197,7 +198,7 @@ void main(int argc,char *argv[])
 	crc32 = getcrc32(pt); pt += 4;
 	pt += PADDING;
 	len = (*pt++ << 8) | (*pt++);
-	printf("[Length %d] ",len);
+	//printf("[Length %d] ",len);
 	first += PADDING + 2 + 4;	// 0xc1:0x00:crc32:PADDING
 
 	for (j=0;j < len;j++) putchar(*pt++); putchar(0x20);
@@ -268,10 +269,11 @@ void main(int argc,char *argv[])
 			//printf("%2x",*pt);
 			for(cntstr=0;cntstr<numstr;cntstr++) {
 				pt = fixmap(pt);
-				if(pt == 0) {
+				if(pt == (unsigned char *)-1) {
+					printf("EOF\n");
 					close(fd);
 					exit(EXIT_SUCCESS);
-				} if(pt < 0) {
+				} if(pt == (unsigned char *)-2) {
 					close(fd);
 					exit(EXIT_FAILURE);
 				}
